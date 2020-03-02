@@ -18,9 +18,18 @@
     "gulp-typescript": "^6.0.0-alpha.1",
     "gulp-uglify": "^3.0.2",
     "tsify": "^4.0.1",
-    "typescript": "^3.7.5",
+    "typescript": "^3.8.3",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
     "watchify": "^3.11.1"
-  }
+  },
+  "main": "gulpfile.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Spirors/WebGLRendering.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Spirors/WebGLRendering/issues"
+  },
+  "homepage": "https://github.com/Spirors/WebGLRendering#readme"
 }
