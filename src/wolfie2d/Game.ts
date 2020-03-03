@@ -10,6 +10,7 @@ import {SceneGraph} from './scene/SceneGraph'
 import {AnimatedSprite} from './scene/sprite/AnimatedSprite'
 import {ResourceManager} from './files/ResourceManager'
 import {UIController} from './ui/UIController'
+import { GradientCircle } from './scene/sprite/GradientCircle'
 
 export class Game extends GameLoopTemplate {
     private resourceManager : ResourceManager = new ResourceManager();
@@ -50,8 +51,11 @@ export class Game extends GameLoopTemplate {
         let visibleSprites : Array<AnimatedSprite>;
         visibleSprites = <Array<AnimatedSprite>>this.sceneGraph.scope();
 
+        let visibleCircles : Array<GradientCircle>;
+        visibleCircles = <Array<GradientCircle>>this.sceneGraph.gCricleScope();
+
         // RENDER THE VISIBLE SET, WHICH SHOULD ALL BE RENDERABLE
-        this.renderingSystem.render(visibleSprites);
+        this.renderingSystem.render(visibleSprites, visibleCircles);
     }
 
     /**

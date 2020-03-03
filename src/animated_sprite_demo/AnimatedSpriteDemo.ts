@@ -11,6 +11,8 @@ import {WebGLGameRenderingSystem} from '../wolfie2d/rendering/WebGLGameRendering
 import {SceneGraph} from '../wolfie2d/scene/SceneGraph'
 import {AnimatedSprite} from '../wolfie2d/scene/sprite/AnimatedSprite'
 import {AnimatedSpriteType} from '../wolfie2d/scene/sprite/AnimatedSpriteType'
+import { GradientCircleRenderer } from '../wolfie2d/rendering/GradientCircleRenderer'
+import { GradientCircle } from '../wolfie2d/scene/sprite/GradientCircle'
 
 // IN THIS EXAMPLE WE'LL HAVE 2 SPRITE TYPES THAT EACH HAVE THE SAME 2 STATES
 // AND WHERE EACH SPRITE TYPE HAS ITS OWN SPRITE SHEET
@@ -46,6 +48,8 @@ class AnimatedSpriteDemo {
             resourceManager.loadSpriteTypes(DEMO_SPRITE_TYPES, function() {
                 // ONLY AFTER ALL THE SPRITE TYPES HAVE LOADED LOAD THE SPRITES
                 builder.buildAnimatedSprites(resourceManager, sceneGraph);
+                
+                builder.buildGradientCircles(sceneGraph);
 
                 // AND BUILD ALL THE TEXT OUR APP WILL USE
                 builder.buildText(game);
@@ -54,6 +58,19 @@ class AnimatedSpriteDemo {
                 callback();
             });
         });
+    }
+
+    private buildGradientCircles(scene : SceneGraph){
+        let canvasWidth : number = (<HTMLCanvasElement>document.getElementById("game_canvas")).width;
+        let canvasHeight : number = (<HTMLCanvasElement>document.getElementById("game_canvas")).height;
+
+        for (let i = 0; i < 5; i++){
+            let gCircleToAdd : GradientCircle = new GradientCircle(256, 256);
+            let randomX : number = Math.floor(Math.random() * canvasWidth) - (gCircleToAdd.getWidth()/2);
+            let randomY : number = Math.floor(Math.random() * canvasHeight) - (gCircleToAdd.getHeight()/2);
+            gCircleToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
+            scene.addGCircle(gCircleToAdd);
+        }
     }
 
     /*

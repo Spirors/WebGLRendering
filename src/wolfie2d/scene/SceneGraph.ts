@@ -1,21 +1,26 @@
 import {SceneObject} from './SceneObject'
 import {AnimatedSprite} from './sprite/AnimatedSprite'
+import { GradientCircle } from './sprite/GradientCircle';
 
 export class SceneGraph {
     // AND ALL OF THE ANIMATED SPRITES, WHICH ARE NOT STORED
     // SORTED OR IN ANY PARTICULAR ORDER. NOTE THAT ANIMATED SPRITES
     // ARE SCENE OBJECTS
     private animatedSprites : Array<AnimatedSprite>;
+    private gradientCircles : Array<GradientCircle>;
 
     // SET OF VISIBLE OBJECTS, NOTE THAT AT THE MOMENT OUR
     // SCENE GRAPH IS QUITE SIMPLE, SO THIS IS THE SAME AS
     // OUR LIST OF ANIMATED SPRITES
     private visibleSet : Array<SceneObject>;
+    private gCircleSet : Array<SceneObject>;
 
     public constructor() {
         // DEFAULT CONSTRUCTOR INITIALIZES OUR DATA STRUCTURES
         this.animatedSprites = new Array();
         this.visibleSet = new Array();
+        this.gradientCircles = new Array();
+        this.gCircleSet = new Array();
     }
 
     public getNumSprites() : number {
@@ -24,6 +29,10 @@ export class SceneGraph {
 
     public addAnimatedSprite(sprite : AnimatedSprite) : void {
         this.animatedSprites.push(sprite);
+    }
+
+    public addGCircle(gCirlce : GradientCircle) : void {
+        this.gradientCircles.push(gCirlce);
     }
 
     public getSpriteAt(testX : number, testY : number) : AnimatedSprite {
@@ -59,5 +68,14 @@ export class SceneGraph {
         }
 
         return this.visibleSet;
+    }
+    public gCricleScope() {
+        this.gCircleSet = [];
+
+        for (let gCirlce of this.gradientCircles) {
+            this.gCircleSet.push(gCirlce);
+        }
+
+        return this.gCircleSet;
     }
 }
