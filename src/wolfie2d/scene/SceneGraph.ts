@@ -24,7 +24,7 @@ export class SceneGraph {
     }
 
     public getNumSprites() : number {
-        return this.animatedSprites.length;
+        return this.animatedSprites.length + this.gradientCircles.length;
     }
 
     public addAnimatedSprite(sprite : AnimatedSprite) : void {

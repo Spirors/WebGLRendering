@@ -1465,17 +1465,17 @@ var GradientCircleRenderer = function () {
         key: "init",
         value: function init(webGL) {
             this.shader = new WebGLGameShader_1.WebGLGameShader();
-            var vertexShaderSource = 'uniform mat4 u_transform;\n' + 'attribute vec4 a_position;\n' + 'attribute vec3 a_color;\n' + 'varying vec3 fragColor;\n' + 'void main() {\n' + ' fragColor = a_color;\n' + ' gl_Position = u_transform * a_position;\n' + '}\n';
-            var fragmentShaderSource = '#ifdef GL_ES\n' + 'precision mediump float;\n' + '#endif\n' + 'varying vec3 fragColor;\n' + 'void main() {\n' + ' gl_FragColor = vec4(fragColor, 1.0);\n' + '}\n';
+            var vertexShaderSource = 'precision highp float;\n' + 'uniform mat4 u_transform;\n' + 'attribute vec4 a_position;\n' + 'attribute vec2 a_ValueToInterpolate;\n' + 'varying vec2 val;\n' + 'void main() {\n' + '   val = a_ValueToInterpolate;\n' + '   gl_Position = u_transform * a_position;\n' + '}\n';
+            var fragmentShaderSource = '#ifdef GL_ES\n' + 'precision mediump float;\n' + '#endif\n' + 'precision highp float;\n' + 'varying vec2 val;\n' + 'void main() {\n' + '   float R = 0.5;\n' + '   float dist = sqrt(dot(val, val));\n' + '   float alpha = 1.0;\n' + '   if (dist > R) {\n' + '       discard;\n' + '   }\n' + '   gl_FragColor = vec4(0.0, 0.0, dist, alpha);\n' + '}\n';
             this.shader.init(webGL, vertexShaderSource, fragmentShaderSource);
-            var verticesTexCoords = new Float32Array([-0.5, 0.5, 1.0, 1.0, 0.0, -0.5, -0.5, 0.7, 0.0, 1.0, 0.5, 0.5, 0.1, 1.0, 0.6, 0.5, -0.5, 1.0, 0.3, 0.5]);
+            var verticesTexCoords = new Float32Array([-0.5, 0.5, 0.0, 0.0, -0.5, -0.5, 0.0, 1.0, 0.5, 0.5, 1.0, 0.0, 0.5, -0.5, 1.0, 1.0]);
             this.vertexTexCoordBuffer = webGL.createBuffer();
             webGL.bindBuffer(webGL.ARRAY_BUFFER, this.vertexTexCoordBuffer);
             webGL.bufferData(webGL.ARRAY_BUFFER, verticesTexCoords, webGL.STATIC_DRAW);
-            this.spriteTransform = new Matrix_1.Matrix(4, 4);
-            this.spriteTranslate = new Vector3_1.Vector3();
-            this.spriteRotate = new Vector3_1.Vector3();
-            this.spriteScale = new Vector3_1.Vector3();
+            this.Transform = new Matrix_1.Matrix(4, 4);
+            this.Translate = new Vector3_1.Vector3();
+            this.Rotate = new Vector3_1.Vector3();
+            this.Scale = new Vector3_1.Vector3();
         }
     }, {
         key: "renderGCircles",
@@ -1511,33 +1511,31 @@ var GradientCircleRenderer = function () {
     }, {
         key: "renderGCircle",
         value: function renderGCircle(webGL, canvasWidth, canvasHeight, gCircle) {
-            var spriteWidth = gCircle.getWidth();
-            var spriteHeight = gCircle.getHeight();
-            var spriteXInPixels = gCircle.getPosition().getX() + spriteWidth / 2;
-            var spriteYInPixels = gCircle.getPosition().getY() + spriteHeight / 2;
-            var spriteXTranslate = (spriteXInPixels - canvasWidth / 2) / (canvasWidth / 2);
-            var spriteYTranslate = (spriteYInPixels - canvasHeight / 2) / (canvasHeight / 2);
-            this.spriteTranslate.setX(spriteXTranslate);
-            this.spriteTranslate.setY(-spriteYTranslate);
-            // CALCULATE HOW MUCH TO SCALE THE QUAD PER THE SPRITE SIZE
+            var Width = gCircle.getWidth();
+            var Height = gCircle.getHeight();
+            var XInPixels = gCircle.getPosition().getX() + Width / 2;
+            var YInPixels = gCircle.getPosition().getY() + Height / 2;
+            var XTranslate = (XInPixels - canvasWidth / 2) / (canvasWidth / 2);
+            var YTranslate = (YInPixels - canvasHeight / 2) / (canvasHeight / 2);
+            this.Translate.setX(XTranslate);
+            this.Translate.setY(-YTranslate);
             var defaultWidth = canvasWidth / 2;
             var defaultHeight = canvasHeight / 2;
-            var scaleX = spriteWidth / defaultWidth;
-            var scaleY = spriteHeight / defaultHeight;
-            this.spriteScale.setX(scaleX);
-            this.spriteScale.setY(scaleY);
-            // @todo - COMBINE THIS WITH THE ROTATE AND SCALE VALUES FROM THE SPRITE
-            MathUtilities_1.MathUtilities.identity(this.spriteTransform);
-            MathUtilities_1.MathUtilities.model(this.spriteTransform, this.spriteTranslate, this.spriteRotate, this.spriteScale);
+            var scaleX = Width / defaultWidth;
+            var scaleY = Height / defaultHeight;
+            this.Scale.setX(scaleX);
+            this.Scale.setY(scaleY);
+            MathUtilities_1.MathUtilities.identity(this.Transform);
+            MathUtilities_1.MathUtilities.model(this.Transform, this.Translate, this.Rotate, this.Scale);
             webGL.bindBuffer(webGL.ARRAY_BUFFER, this.vertexTexCoordBuffer);
             var u_transformLocation = webGL.getUniformLocation(this.shaderProgramToUse, 'u_transform');
-            webGL.uniformMatrix4fv(u_transformLocation, false, this.spriteTransform.getData());
+            webGL.uniformMatrix4fv(u_transformLocation, false, this.Transform.getData());
             var positionAttrLocation = webGL.getAttribLocation(this.shaderProgramToUse, 'a_position');
-            webGL.vertexAttribPointer(positionAttrLocation, 2, webGL.FLOAT, false, 5 * Float32Array.BYTES_PER_ELEMENT, 0);
+            webGL.vertexAttribPointer(positionAttrLocation, 2, webGL.FLOAT, false, 16, 0);
             webGL.enableVertexAttribArray(positionAttrLocation);
-            var colorAttrLocation = webGL.getAttribLocation(this.shaderProgramToUse, 'a_color');
-            webGL.vertexAttribPointer(colorAttrLocation, 3, webGL.FLOAT, false, 5 * Float32Array.BYTES_PER_ELEMENT, 2 * Float32Array.BYTES_PER_ELEMENT);
-            webGL.enableVertexAttribArray(colorAttrLocation);
+            var valAttrLocation = webGL.getAttribLocation(this.shaderProgramToUse, 'a_ValueToInterpolate');
+            webGL.vertexAttribPointer(valAttrLocation, 2, webGL.FLOAT, false, 16, 0);
+            webGL.enableVertexAttribArray(valAttrLocation);
             webGL.drawArrays(webGL.TRIANGLE_STRIP, 0, 4);
         }
     }]);
@@ -2045,7 +2043,7 @@ var SceneGraph = function () {
     _createClass(SceneGraph, [{
         key: "getNumSprites",
         value: function getNumSprites() {
-            return this.animatedSprites.length;
+            return this.animatedSprites.length + this.gradientCircles.length;
         }
     }, {
         key: "addAnimatedSprite",
