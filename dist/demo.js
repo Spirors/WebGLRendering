@@ -42,6 +42,7 @@ var AnimatedSpriteDemo = function () {
             var sceneGraph = game.getSceneGraph();
             var resourceManager = game.getResourceManager();
             var builder = this;
+            var canvas = document.getElementById("game_canvas");
             // EMPLOY THE RESOURCE MANAGER TO BUILD ALL THE WORLD CONTENT
             resourceManager.loadTextures(DEMO_TEXTURES, renderingSystem, function () {
                 // ONLY AFTER ALL THE TEXTURES HAVE LOADED LOAD THE SPRITE TYPES
@@ -51,10 +52,100 @@ var AnimatedSpriteDemo = function () {
                     builder.buildGradientCircles(sceneGraph);
                     // AND BUILD ALL THE TEXT OUR APP WILL USE
                     builder.buildText(game);
+                    // let textR = new TextToRender("Obj_Info", "", 40, 70, function() {
+                    //     let textRenderer = renderingSystem.getTextRenderer();
+                    //     canvas.addEventListener("mouseover", function(event) {
+                    //         textR.text = builder.mouseOverHandler(event, sceneGraph);
+                    //     });
+                    //     if (textR.text == "") {
+                    //         textRenderer.remove("Obj_Info");
+                    //     }else {
+                    //         textRenderer.addTextToRender(textR);
+                    //     }
+                    // });
+                    canvas.addEventListener("dblclick", function (event) {
+                        builder.mouseDoubleClickHandler(event, sceneGraph);
+                    });
+                    canvas.addEventListener("click", function (event) {
+                        builder.mouseSingleClickHandler(event, resourceManager, sceneGraph);
+                    });
                     // EVERYTHING HAS BEEN BUILT, CALL THE CALLBACK
                     callback();
                 });
             });
+        }
+        // public mouseOverHandler(event : MouseEvent, scene : SceneGraph){
+        //     let mousex : number = event.clientX;
+        //     let mousey : number = event.clientY;
+        //     let sprite : AnimatedSprite = scene.getSpriteAt(mousex, mousey);
+        //     let circle : GradientCircle = scene.getCircleAt(mousex, mousey);
+        //     if (sprite == null && circle == null){
+        //         return "";
+        //     }else if (circle != null){
+        //         return circle.toString();
+        //     }else {
+        //         return sprite.toString();
+        //     }
+        // }
+
+    }, {
+        key: "mouseDoubleClickHandler",
+        value: function mouseDoubleClickHandler(event, scene) {
+            var mousex = event.clientX;
+            var mousey = event.clientY;
+            var animatedSprites = scene.getSprites();
+            var gradientCirlces = scene.getCircles();
+            for (var i = gradientCirlces.length - 1; i >= 0; i--) {
+                if (gradientCirlces[i].contains(mousex, mousey)) {
+                    gradientCirlces.splice(i, 1);
+                    return;
+                }
+            }
+            for (var _i = animatedSprites.length - 1; _i >= 0; _i--) {
+                if (animatedSprites[_i].contains(mousex, mousey)) {
+                    animatedSprites.splice(_i, 1);
+                    return;
+                }
+            }
+        }
+    }, {
+        key: "mouseSingleClickHandler",
+        value: function mouseSingleClickHandler(event, resourceManager, scene) {
+            var mousex = event.clientX;
+            var mousey = event.clientY;
+            var sprite = scene.getSpriteAt(mousex, mousey);
+            var circle = scene.getCircleAt(mousex, mousey);
+            if (sprite == null && circle == null) {
+                var op = Math.floor(Math.random() * 3);
+                var spriteTypeToUse = void 0;
+                var animatedSpriteType = void 0;
+                var spriteToAdd = void 0;
+                var gCircleToAdd = void 0;
+                switch (op) {
+                    case 0:
+                        spriteTypeToUse = DEMO_SPRITE_TYPES[0];
+                        animatedSpriteType = resourceManager.getAnimatedSpriteTypeById(spriteTypeToUse);
+                        spriteToAdd = new AnimatedSprite_1.AnimatedSprite(animatedSpriteType, DEMO_SPRITE_STATES.FORWARD_STATE);
+                        spriteToAdd.getPosition().set(mousex - animatedSpriteType.getSpriteWidth() / 2, mousey - animatedSpriteType.getSpriteHeight() / 2, 0.0, 1.0);
+                        scene.addAnimatedSprite(spriteToAdd);
+                        break;
+                    case 1:
+                        spriteTypeToUse = DEMO_SPRITE_TYPES[1];
+                        animatedSpriteType = resourceManager.getAnimatedSpriteTypeById(spriteTypeToUse);
+                        spriteToAdd = new AnimatedSprite_1.AnimatedSprite(animatedSpriteType, DEMO_SPRITE_STATES.FORWARD_STATE);
+                        spriteToAdd.getPosition().set(mousex - animatedSpriteType.getSpriteWidth() / 2, mousey - animatedSpriteType.getSpriteHeight() / 2, 0.0, 1.0);
+                        scene.addAnimatedSprite(spriteToAdd);
+                        break;
+                    case 2:
+                        var randomC = Math.floor(Math.random() * 6);
+                        gCircleToAdd = new GradientCircle_1.GradientCircle(256, 256, randomC);
+                        gCircleToAdd.getPosition().set(mousex - gCircleToAdd.getWidth() / 2, mousey - gCircleToAdd.getHeight() / 2, 0.0, 1.0);
+                        scene.addGCircle(gCircleToAdd);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }, {
         key: "buildGradientCircles",
@@ -62,7 +153,8 @@ var AnimatedSpriteDemo = function () {
             var canvasWidth = document.getElementById("game_canvas").width;
             var canvasHeight = document.getElementById("game_canvas").height;
             for (var i = 0; i < 5; i++) {
-                var gCircleToAdd = new GradientCircle_1.GradientCircle(256, 256);
+                var randomC = Math.floor(Math.random() * 6);
+                var gCircleToAdd = new GradientCircle_1.GradientCircle(256, 256, randomC);
                 var randomX = Math.floor(Math.random() * canvasWidth) - gCircleToAdd.getWidth() / 2;
                 var randomY = Math.floor(Math.random() * canvasHeight) - gCircleToAdd.getHeight() / 2;
                 gCircleToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
@@ -1469,7 +1561,7 @@ var GradientCircleRenderer = function () {
         value: function init(webGL) {
             this.shader = new WebGLGameShader_1.WebGLGameShader();
             var vertexShaderSource = 'precision highp float;\n' + 'uniform mat4 u_transform;\n' + 'attribute vec4 a_position;\n' + 'attribute vec2 a_ValueToInterpolate;\n' + 'varying vec2 val;\n' + 'void main() {\n' + '   val = a_ValueToInterpolate;\n' + '   gl_Position = u_transform * a_position;\n' + '}\n';
-            var fragmentShaderSource = 'precision highp float;\n' + 'varying vec2 val;\n' + 'void main() {\n' + '   float R = 0.5;\n' + '   float dist = sqrt(dot(val, val));\n' + '   float alpha = 1.0;\n' + '   if (dist > R) {\n' + '       discard;\n' + '   }\n' + '   gl_FragColor = vec4(dist, 0.0, dist, alpha);\n' + '}\n';
+            var fragmentShaderSource = 'precision highp float;\n' + 'varying vec2 val;\n' + 'uniform int u_color;\n' + 'void main() {\n' + '   float R = 0.5;\n' + '   float dist = sqrt(dot(val, val));\n' + '   float alpha = 1.0;\n' + '   if (dist > R) {\n' + '       discard;\n' + '   }\n' + '   gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);\n' + '   if (u_color == 0) {\n' + '       gl_FragColor.r = dist;\n' + '   }\n' + '   if (u_color == 1) {\n' + '       gl_FragColor.g = dist;\n' + '   }\n' + '   if (u_color == 2) {\n' + '       gl_FragColor.b = dist;\n' + '   }\n' + '   if (u_color == 3) {\n' + '       gl_FragColor.r = dist;\n' + '       gl_FragColor.g = dist;\n' + '   }\n' + '   if (u_color == 4) {\n' + '       gl_FragColor.g = dist;\n' + '       gl_FragColor.b = dist;\n' + '   }\n' + '   if (u_color == 5) {\n' + '       gl_FragColor.r = dist;\n' + '       gl_FragColor.b = dist;\n' + '   }\n' + '}\n';
             this.shader.init(webGL, vertexShaderSource, fragmentShaderSource);
             var verticesTexCoords = new Float32Array([-0.5, 0.5, 0.0, 0.0, -0.5, -0.5, 0.0, 1.0, 0.5, 0.5, 1.0, 0.0, 0.5, -0.5, 1.0, 1.0]);
             this.vertexTexCoordBuffer = webGL.createBuffer();
@@ -1533,6 +1625,9 @@ var GradientCircleRenderer = function () {
             webGL.bindBuffer(webGL.ARRAY_BUFFER, this.vertexTexCoordBuffer);
             var u_transformLocation = webGL.getUniformLocation(this.shaderProgramToUse, 'u_transform');
             webGL.uniformMatrix4fv(u_transformLocation, false, this.Transform.getData());
+            var circle_color = gCircle.getColor();
+            var u_colorLocation = webGL.getUniformLocation(this.shaderProgramToUse, 'u_color');
+            webGL.uniform1i(u_colorLocation, circle_color);
             var positionAttrLocation = webGL.getAttribLocation(this.shaderProgramToUse, 'a_position');
             webGL.vertexAttribPointer(positionAttrLocation, 2, webGL.FLOAT, false, 16, 0);
             webGL.enableVertexAttribArray(positionAttrLocation);
@@ -1601,6 +1696,16 @@ var TextRenderer = function () {
         key: "clear",
         value: function clear() {
             this.textToRender = [];
+        }
+    }, {
+        key: "remove",
+        value: function remove(id) {
+            for (var i = 0; i < this.textToRender.length; i++) {
+                if (this.textToRender[i].id == id) {
+                    this.textToRender.splice(i, 1);
+                    return;
+                }
+            }
         }
     }, {
         key: "getCanvasWidth",
@@ -2508,13 +2613,14 @@ var SceneObject_1 = require("../SceneObject");
 var GradientCircle = function (_SceneObject_1$SceneO) {
     _inherits(GradientCircle, _SceneObject_1$SceneO);
 
-    function GradientCircle(width, height) {
+    function GradientCircle(width, height, color) {
         _classCallCheck(this, GradientCircle);
 
         var _this = _possibleConstructorReturn(this, (GradientCircle.__proto__ || Object.getPrototypeOf(GradientCircle)).call(this));
 
         _this.width = width;
         _this.height = height;
+        _this.color = color;
         return _this;
     }
 
@@ -2527,6 +2633,11 @@ var GradientCircle = function (_SceneObject_1$SceneO) {
         key: "getHeight",
         value: function getHeight() {
             return this.height;
+        }
+    }, {
+        key: "getColor",
+        value: function getColor() {
+            return this.color;
         }
     }, {
         key: "contains",
@@ -2542,6 +2653,35 @@ var GradientCircle = function (_SceneObject_1$SceneO) {
             } else {
                 return true;
             }
+        }
+    }, {
+        key: "toString",
+        value: function toString() {
+            var c_str = "";
+            switch (this.color) {
+                case 0:
+                    c_str = "red";
+                    break;
+                case 1:
+                    c_str = "blue";
+                    break;
+                case 2:
+                    c_str = "green";
+                    break;
+                case 3:
+                    c_str = "yellow";
+                    break;
+                case 4:
+                    c_str = "cyan";
+                    break;
+                case 5:
+                    c_str = "magenta";
+                    break;
+                default:
+                    break;
+            }
+            var summary = "{ position: (" + this.getPosition().getX() + ", " + this.getPosition().getY() + ") " + "(color: " + c_str + ") ";
+            return summary;
         }
     }]);
 
@@ -2565,37 +2705,6 @@ var UIController = function () {
 
         _classCallCheck(this, UIController);
 
-        this.mouseOverHandler = function (event) {
-            return;
-        };
-        this.mouseDoubleClickHandler = function (event) {
-            var mousex = event.clientX;
-            var mousey = event.clientY;
-            var animatedSprites = _this.scene.getSprites();
-            var gradientCirlces = _this.scene.getCircles();
-            for (var i = 0; i < animatedSprites.length; i++) {
-                if (animatedSprites[i].contains(mousex, mousey)) {
-                    animatedSprites.splice(i, 1);
-                    return;
-                }
-            }
-            for (var _i = 0; _i < gradientCirlces.length; _i++) {
-                if (gradientCirlces[_i].contains(mousex, mousey)) {
-                    gradientCirlces.splice(_i, 1);
-                    return;
-                }
-            }
-        };
-        this.mouseSingleClickHandler = function (event) {
-            var mousex = event.clientX;
-            var mousey = event.clientY;
-            var sprite = _this.scene.getSpriteAt(mousex, mousey);
-            var circle = _this.scene.getCircleAt(mousex, mousey);
-            if (sprite == null && circle == null) {
-                var op = Math.floor(Math.random() * 3);
-                console.log(Math.floor(Math.random() * 3));
-            }
-        };
         this.mouseDownHandler = function (event) {
             var mousePressX = event.clientX;
             var mousePressY = event.clientY;
@@ -2631,9 +2740,6 @@ var UIController = function () {
             canvas.addEventListener("mousedown", this.mouseDownHandler);
             canvas.addEventListener("mousemove", this.mouseMoveHandler);
             canvas.addEventListener("mouseup", this.mouseUpHandler);
-            canvas.addEventListener("mouseover", this.mouseOverHandler);
-            canvas.addEventListener("dblclick", this.mouseDoubleClickHandler);
-            canvas.addEventListener("click", this.mouseSingleClickHandler);
         }
     }]);
 

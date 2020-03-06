@@ -11,7 +11,6 @@ import {WebGLGameRenderingSystem} from '../wolfie2d/rendering/WebGLGameRendering
 import {SceneGraph} from '../wolfie2d/scene/SceneGraph'
 import {AnimatedSprite} from '../wolfie2d/scene/sprite/AnimatedSprite'
 import {AnimatedSpriteType} from '../wolfie2d/scene/sprite/AnimatedSpriteType'
-import { GradientCircleRenderer } from '../wolfie2d/rendering/GradientCircleRenderer'
 import { GradientCircle } from '../wolfie2d/scene/sprite/GradientCircle'
 
 // IN THIS EXAMPLE WE'LL HAVE 2 SPRITE TYPES THAT EACH HAVE THE SAME 2 STATES
@@ -31,7 +30,6 @@ const DEMO_TEXTURES : string[] = [
 
 class AnimatedSpriteDemo {
     constructor() {}
-
     /**
      * This method initializes the application, building all the needed
      * game objects and setting them up for use.
@@ -41,7 +39,8 @@ class AnimatedSpriteDemo {
         let sceneGraph : SceneGraph = game.getSceneGraph();
         let resourceManager : ResourceManager = game.getResourceManager();
         let builder = this;
- 
+        let canvas : HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("game_canvas");
+
         // EMPLOY THE RESOURCE MANAGER TO BUILD ALL THE WORLD CONTENT
         resourceManager.loadTextures(DEMO_TEXTURES, renderingSystem, function() {
             // ONLY AFTER ALL THE TEXTURES HAVE LOADED LOAD THE SPRITE TYPES
@@ -53,6 +52,26 @@ class AnimatedSpriteDemo {
 
                 // AND BUILD ALL THE TEXT OUR APP WILL USE
                 builder.buildText(game);
+                
+                // let textR = new TextToRender("Obj_Info", "", 40, 70, function() {
+                //     let textRenderer = renderingSystem.getTextRenderer();
+                //     canvas.addEventListener("mouseover", function(event) {
+                //         textR.text = builder.mouseOverHandler(event, sceneGraph);
+                //     });
+                //     if (textR.text == "") {
+                //         textRenderer.remove("Obj_Info");
+                //     }else {
+                //         textRenderer.addTextToRender(textR);
+                //     }
+                // });
+
+                canvas.addEventListener("dblclick", function(event) {
+                    builder.mouseDoubleClickHandler(event, sceneGraph);
+                });
+
+                canvas.addEventListener("click", function(event) {
+                    builder.mouseSingleClickHandler(event, resourceManager, sceneGraph);
+                });
 
                 // EVERYTHING HAS BEEN BUILT, CALL THE CALLBACK
                 callback();
@@ -60,12 +79,90 @@ class AnimatedSpriteDemo {
         });
     }
 
+    // public mouseOverHandler(event : MouseEvent, scene : SceneGraph){
+    //     let mousex : number = event.clientX;
+    //     let mousey : number = event.clientY;
+
+    //     let sprite : AnimatedSprite = scene.getSpriteAt(mousex, mousey);
+    //     let circle : GradientCircle = scene.getCircleAt(mousex, mousey);
+
+    //     if (sprite == null && circle == null){
+    //         return "";
+    //     }else if (circle != null){
+    //         return circle.toString();
+    //     }else {
+    //         return sprite.toString();
+    //     }
+    // }
+
+    public mouseDoubleClickHandler(event : MouseEvent, scene : SceneGraph) {
+        let mousex : number = event.clientX;
+        let mousey : number = event.clientY;
+        let animatedSprites : Array<AnimatedSprite> = scene.getSprites();
+        let gradientCirlces : Array<GradientCircle> = scene.getCircles();
+
+        for (let i = gradientCirlces.length-1; i >= 0; i--) {
+            if (gradientCirlces[i].contains(mousex, mousey)){
+                gradientCirlces.splice(i, 1);
+                return;
+            }
+        }
+        for (let i = animatedSprites.length-1; i >= 0; i--) {
+            if (animatedSprites[i].contains(mousex, mousey)){
+                animatedSprites.splice(i, 1);
+                return;
+            }
+        }
+    }
+
+    public mouseSingleClickHandler(event : MouseEvent, resourceManager : ResourceManager, scene : SceneGraph) {
+        let mousex : number = event.clientX;
+        let mousey : number = event.clientY;
+
+        let sprite : AnimatedSprite = scene.getSpriteAt(mousex, mousey);
+        let circle : GradientCircle = scene.getCircleAt(mousex, mousey);
+
+        if (sprite == null && circle == null){
+            let op = Math.floor(Math.random() * 3);
+            
+            let spriteTypeToUse : string;
+            let animatedSpriteType : AnimatedSpriteType;
+            let spriteToAdd : AnimatedSprite;
+            let gCircleToAdd : GradientCircle;
+            switch(op){
+                case 0:
+                    spriteTypeToUse = DEMO_SPRITE_TYPES[0];
+                    animatedSpriteType = resourceManager.getAnimatedSpriteTypeById(spriteTypeToUse);
+                    spriteToAdd = new AnimatedSprite(animatedSpriteType, DEMO_SPRITE_STATES.FORWARD_STATE);
+                    spriteToAdd.getPosition().set(mousex-(animatedSpriteType.getSpriteWidth()/2), mousey-(animatedSpriteType.getSpriteHeight()/2), 0.0, 1.0);
+                    scene.addAnimatedSprite(spriteToAdd);
+                    break;
+                case 1:
+                    spriteTypeToUse = DEMO_SPRITE_TYPES[1];
+                    animatedSpriteType = resourceManager.getAnimatedSpriteTypeById(spriteTypeToUse);
+                    spriteToAdd = new AnimatedSprite(animatedSpriteType, DEMO_SPRITE_STATES.FORWARD_STATE);
+                    spriteToAdd.getPosition().set(mousex-(animatedSpriteType.getSpriteWidth()/2), mousey-(animatedSpriteType.getSpriteHeight()/2), 0.0, 1.0);
+                    scene.addAnimatedSprite(spriteToAdd);
+                    break;
+                case 2:
+                    let randomC : number = Math.floor(Math.random() * 6);
+                    gCircleToAdd = new GradientCircle(256, 256, randomC);
+                    gCircleToAdd.getPosition().set(mousex-(gCircleToAdd.getWidth()/2), mousey-(gCircleToAdd.getHeight()/2), 0.0, 1.0);
+                    scene.addGCircle(gCircleToAdd);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     private buildGradientCircles(scene : SceneGraph){
         let canvasWidth : number = (<HTMLCanvasElement>document.getElementById("game_canvas")).width;
         let canvasHeight : number = (<HTMLCanvasElement>document.getElementById("game_canvas")).height;
 
         for (let i = 0; i < 5; i++){
-            let gCircleToAdd : GradientCircle = new GradientCircle(256, 256);
+            let randomC : number = Math.floor(Math.random() * 6);
+            let gCircleToAdd : GradientCircle = new GradientCircle(256, 256, randomC);
             let randomX : number = Math.floor(Math.random() * canvasWidth) - (gCircleToAdd.getWidth()/2);
             let randomY : number = Math.floor(Math.random() * canvasHeight) - (gCircleToAdd.getHeight()/2);
             gCircleToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);

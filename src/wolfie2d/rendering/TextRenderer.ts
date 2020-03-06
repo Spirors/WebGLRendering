@@ -61,6 +61,15 @@ export class TextRenderer {
         this.textToRender = [];
     }
 
+    public remove(id : string){
+        for (let i = 0; i < this.textToRender.length; i++){
+            if (this.textToRender[i].id == id){
+                this.textToRender.splice(i, 1);
+                return;
+            }
+        }
+    }
+
     public getCanvasWidth() : number {
         return this.textCanvasWidth;
     }
