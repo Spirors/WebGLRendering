@@ -101,7 +101,10 @@ class AnimatedSpriteDemo {
     private buildText(game : Game) {
         let sceneGraph : SceneGraph = game.getSceneGraph();
         let numSpritesText = new TextToRender("Num Sprites", "", 20, 50, function() {
-            numSpritesText.text = "Number of Sprites: " + sceneGraph.getNumSprites();
+            let numSprites = sceneGraph.getNumSprites();
+            let numCircles = sceneGraph.getNumCircles();
+            let total = numSprites+numCircles;
+            numSpritesText.text = "Number of Scene Objects: " + total;
         });
         let textRenderer = game.getRenderingSystem().getTextRenderer();
         textRenderer.addTextToRender(numSpritesText);

@@ -24,7 +24,10 @@ export class SceneGraph {
     }
 
     public getNumSprites() : number {
-        return this.animatedSprites.length + this.gradientCircles.length;
+        return this.animatedSprites.length;
+    }
+    public getNumCircles() : number {
+        return this.gradientCircles.length;
     }
 
     public addAnimatedSprite(sprite : AnimatedSprite) : void {
@@ -41,6 +44,22 @@ export class SceneGraph {
                 return sprite;
         }
         return null;
+    }
+
+    public getCircleAt(testX : number, testY : number) : GradientCircle {
+        for (let circle of this.gradientCircles) {
+            if (circle.contains(testX, testY))
+                return circle;
+        }
+        return null;
+    }
+
+    public getSprites() : Array<AnimatedSprite>{
+        return this.animatedSprites;
+    }
+
+    public getCircles() : Array<GradientCircle>{
+        return this.gradientCircles;
     }
 
     /**
