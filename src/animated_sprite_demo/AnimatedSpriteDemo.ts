@@ -52,48 +52,52 @@ class AnimatedSpriteDemo {
 
                 // AND BUILD ALL THE TEXT OUR APP WILL USE
                 builder.buildText(game);
-                
-                // let textR = new TextToRender("Obj_Info", "", 40, 70, function() {
-                //     let textRenderer = renderingSystem.getTextRenderer();
-                //     canvas.addEventListener("mouseover", function(event) {
-                //         textR.text = builder.mouseOverHandler(event, sceneGraph);
-                //     });
-                //     if (textR.text == "") {
-                //         textRenderer.remove("Obj_Info");
-                //     }else {
-                //         textRenderer.addTextToRender(textR);
-                //     }
-                // });
 
-                canvas.addEventListener("dblclick", function(event) {
-                    builder.mouseDoubleClickHandler(event, sceneGraph);
-                });
-
-                canvas.addEventListener("click", function(event) {
-                    builder.mouseSingleClickHandler(event, resourceManager, sceneGraph);
-                });
+                builder.setUpMouseEvent(canvas, builder, game);
 
                 // EVERYTHING HAS BEEN BUILT, CALL THE CALLBACK
                 callback();
             });
         });
     }
+    public setUpMouseEvent(canvas : HTMLCanvasElement, builder : AnimatedSpriteDemo, game : Game){
+        canvas.addEventListener("mousemove", function(event) {
+            builder.mouseMoveHandler(event, game.getSceneGraph());
+        });
 
-    // public mouseOverHandler(event : MouseEvent, scene : SceneGraph){
-    //     let mousex : number = event.clientX;
-    //     let mousey : number = event.clientY;
+        canvas.addEventListener("dblclick", function(event) {
+            builder.mouseDoubleClickHandler(event, game.getSceneGraph());
+        });
 
-    //     let sprite : AnimatedSprite = scene.getSpriteAt(mousex, mousey);
-    //     let circle : GradientCircle = scene.getCircleAt(mousex, mousey);
+        canvas.addEventListener("click", function(event) {
+            builder.mouseSingleClickHandler(event, game.getResourceManager(), game.getSceneGraph());
+        });
+    }
 
-    //     if (sprite == null && circle == null){
-    //         return "";
-    //     }else if (circle != null){
-    //         return circle.toString();
-    //     }else {
-    //         return sprite.toString();
-    //     }
-    // }
+    public mouseMoveHandler(event : MouseEvent, scene : SceneGraph){
+        let textRenderer = game.getRenderingSystem().getTextRenderer();
+        let detailT = new TextToRender("detailT", "", 40, 70, function() {
+            let mousex : number = event.clientX;
+            let mousey : number = event.clientY;
+
+            let sprite : AnimatedSprite = scene.getSpriteAt(mousex, mousey);
+            let circle : GradientCircle = scene.getCircleAt(mousex, mousey);
+
+            if (sprite != null || circle != null){
+                if (circle != null){
+                    detailT.text = circle.toString(); 
+                }else {
+                    detailT.text = sprite.toString();
+                }
+            }else {
+                textRenderer.remove("detailT");
+            }
+        });
+        if (textRenderer.contains("detailT") == true){
+            textRenderer.remove("detailT");
+        }
+        textRenderer.addTextToRender(detailT);
+    }
 
     public mouseDoubleClickHandler(event : MouseEvent, scene : SceneGraph) {
         let mousex : number = event.clientX;

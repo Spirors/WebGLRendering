@@ -61,6 +61,15 @@ export class TextRenderer {
         this.textToRender = [];
     }
 
+    public contains(id : string){
+        for (let i = 0; i < this.textToRender.length; i++){
+            if (this.textToRender[i].id == id){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public remove(id : string){
         for (let i = 0; i < this.textToRender.length; i++){
             if (this.textToRender[i].id == id){

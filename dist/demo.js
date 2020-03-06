@@ -52,42 +52,49 @@ var AnimatedSpriteDemo = function () {
                     builder.buildGradientCircles(sceneGraph);
                     // AND BUILD ALL THE TEXT OUR APP WILL USE
                     builder.buildText(game);
-                    // let textR = new TextToRender("Obj_Info", "", 40, 70, function() {
-                    //     let textRenderer = renderingSystem.getTextRenderer();
-                    //     canvas.addEventListener("mouseover", function(event) {
-                    //         textR.text = builder.mouseOverHandler(event, sceneGraph);
-                    //     });
-                    //     if (textR.text == "") {
-                    //         textRenderer.remove("Obj_Info");
-                    //     }else {
-                    //         textRenderer.addTextToRender(textR);
-                    //     }
-                    // });
-                    canvas.addEventListener("dblclick", function (event) {
-                        builder.mouseDoubleClickHandler(event, sceneGraph);
-                    });
-                    canvas.addEventListener("click", function (event) {
-                        builder.mouseSingleClickHandler(event, resourceManager, sceneGraph);
-                    });
+                    builder.setUpMouseEvent(canvas, builder, game);
                     // EVERYTHING HAS BEEN BUILT, CALL THE CALLBACK
                     callback();
                 });
             });
         }
-        // public mouseOverHandler(event : MouseEvent, scene : SceneGraph){
-        //     let mousex : number = event.clientX;
-        //     let mousey : number = event.clientY;
-        //     let sprite : AnimatedSprite = scene.getSpriteAt(mousex, mousey);
-        //     let circle : GradientCircle = scene.getCircleAt(mousex, mousey);
-        //     if (sprite == null && circle == null){
-        //         return "";
-        //     }else if (circle != null){
-        //         return circle.toString();
-        //     }else {
-        //         return sprite.toString();
-        //     }
-        // }
-
+    }, {
+        key: "setUpMouseEvent",
+        value: function setUpMouseEvent(canvas, builder, game) {
+            canvas.addEventListener("mousemove", function (event) {
+                builder.mouseMoveHandler(event, game.getSceneGraph());
+            });
+            canvas.addEventListener("dblclick", function (event) {
+                builder.mouseDoubleClickHandler(event, game.getSceneGraph());
+            });
+            canvas.addEventListener("click", function (event) {
+                builder.mouseSingleClickHandler(event, game.getResourceManager(), game.getSceneGraph());
+            });
+        }
+    }, {
+        key: "mouseMoveHandler",
+        value: function mouseMoveHandler(event, scene) {
+            var textRenderer = game.getRenderingSystem().getTextRenderer();
+            var detailT = new TextRenderer_1.TextToRender("detailT", "", 40, 70, function () {
+                var mousex = event.clientX;
+                var mousey = event.clientY;
+                var sprite = scene.getSpriteAt(mousex, mousey);
+                var circle = scene.getCircleAt(mousex, mousey);
+                if (sprite != null || circle != null) {
+                    if (circle != null) {
+                        detailT.text = circle.toString();
+                    } else {
+                        detailT.text = sprite.toString();
+                    }
+                } else {
+                    textRenderer.remove("detailT");
+                }
+            });
+            if (textRenderer.contains("detailT") == true) {
+                textRenderer.remove("detailT");
+            }
+            textRenderer.addTextToRender(detailT);
+        }
     }, {
         key: "mouseDoubleClickHandler",
         value: function mouseDoubleClickHandler(event, scene) {
@@ -1561,7 +1568,7 @@ var GradientCircleRenderer = function () {
         value: function init(webGL) {
             this.shader = new WebGLGameShader_1.WebGLGameShader();
             var vertexShaderSource = 'precision highp float;\n' + 'uniform mat4 u_transform;\n' + 'attribute vec4 a_position;\n' + 'attribute vec2 a_ValueToInterpolate;\n' + 'varying vec2 val;\n' + 'void main() {\n' + '   val = a_ValueToInterpolate;\n' + '   gl_Position = u_transform * a_position;\n' + '}\n';
-            var fragmentShaderSource = 'precision highp float;\n' + 'varying vec2 val;\n' + 'uniform int u_color;\n' + 'void main() {\n' + '   float R = 0.5;\n' + '   float dist = sqrt(dot(val, val));\n' + '   float alpha = 1.0;\n' + '   if (dist > R) {\n' + '       discard;\n' + '   }\n' + '   gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);\n' + '   if (u_color == 0) {\n' + '       gl_FragColor.r = dist;\n' + '   }\n' + '   if (u_color == 1) {\n' + '       gl_FragColor.g = dist;\n' + '   }\n' + '   if (u_color == 2) {\n' + '       gl_FragColor.b = dist;\n' + '   }\n' + '   if (u_color == 3) {\n' + '       gl_FragColor.r = dist;\n' + '       gl_FragColor.g = dist;\n' + '   }\n' + '   if (u_color == 4) {\n' + '       gl_FragColor.g = dist;\n' + '       gl_FragColor.b = dist;\n' + '   }\n' + '   if (u_color == 5) {\n' + '       gl_FragColor.r = dist;\n' + '       gl_FragColor.b = dist;\n' + '   }\n' + '}\n';
+            var fragmentShaderSource = 'precision highp float;\n' + 'varying vec2 val;\n' + 'uniform int u_color;\n' + 'void main() {\n' + '   float R = 0.5;\n' + '   float dist = sqrt(dot(val, val));\n' + '   float alpha = 1.0;\n' + '   if (dist > R) {\n' + '       discard;\n' + '   }\n' + '   gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);\n' + '   if (u_color == 0) {\n' + '       gl_FragColor.r = dist;\n' + '   }\n' + '   else if (u_color == 1) {\n' + '       gl_FragColor.b = dist;\n' + '   }\n' + '   else if (u_color == 2) {\n' + '       gl_FragColor.g = dist;\n' + '   }\n' + '   else if (u_color == 3) {\n' + '       gl_FragColor.r = dist;\n' + '       gl_FragColor.g = dist;\n' + '   }\n' + '   else if (u_color == 4) {\n' + '       gl_FragColor.g = dist;\n' + '       gl_FragColor.b = dist;\n' + '   }\n' + '   else if (u_color == 5) {\n' + '       gl_FragColor.r = dist;\n' + '       gl_FragColor.b = dist;\n' + '   }\n' + '}\n';
             this.shader.init(webGL, vertexShaderSource, fragmentShaderSource);
             var verticesTexCoords = new Float32Array([-0.5, 0.5, 0.0, 0.0, -0.5, -0.5, 0.0, 1.0, 0.5, 0.5, 1.0, 0.0, 0.5, -0.5, 1.0, 1.0]);
             this.vertexTexCoordBuffer = webGL.createBuffer();
@@ -1696,6 +1703,16 @@ var TextRenderer = function () {
         key: "clear",
         value: function clear() {
             this.textToRender = [];
+        }
+    }, {
+        key: "contains",
+        value: function contains(id) {
+            for (var i = 0; i < this.textToRender.length; i++) {
+                if (this.textToRender[i].id == id) {
+                    return true;
+                }
+            }
+            return false;
         }
     }, {
         key: "remove",
@@ -2660,22 +2677,22 @@ var GradientCircle = function (_SceneObject_1$SceneO) {
             var c_str = "";
             switch (this.color) {
                 case 0:
-                    c_str = "red";
+                    c_str = "rgb(1.0, 0.0, 0.0)";
                     break;
                 case 1:
-                    c_str = "blue";
+                    c_str = "rgb(0.0, 0.0, 1.0)";
                     break;
                 case 2:
-                    c_str = "green";
+                    c_str = "rgb(0.0, 1.0, 0.0)";
                     break;
                 case 3:
-                    c_str = "yellow";
+                    c_str = "rgb(1.0, 1.0, 0.0)";
                     break;
                 case 4:
-                    c_str = "cyan";
+                    c_str = "rgb(0.0, 1.0, 1.0)";
                     break;
                 case 5:
-                    c_str = "magenta";
+                    c_str = "rgb(1.0, 0.0, 1.0)";
                     break;
                 default:
                     break;
